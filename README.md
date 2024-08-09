@@ -14,8 +14,8 @@ Then you can build the container like this:
 
 ### Configuration 
 Configuration is done via environment variables.
-Copy the `example.env` file to `.env` and adapt it to your needs.
-The only setting you need to change is `PRETIXSCAN_PROXY_BASEURL` if you are using your own reverse proxy or `PRETIXSCAN_PROXY_HOSTNAME` if you are using caddy.
+Copy the `example.env` file to `.env` and adapt it to your needs.  
+The only setting you need to change is `PRETIXSCAN_PROXY_BASEURL` if you are using your own reverse proxy or `PRETIXSCAN_PROXY_HOSTNAME` if you are using caddy.  
 You also **really** should change `PRETIXSCAN_PROXY_ADMINAUTH`.
 
 | Environment Variable | Default Value | Description |
