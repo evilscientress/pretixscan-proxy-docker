@@ -1,0 +1,22 @@
+services:
+  proxy:
+    environment:
+      PRETIXSCAN_PROXY_BASEURL: https://${PRETIXSCAN_PROXY_HOSTNAME}:${PRETIXSCAN_PROXY_PORT:-443}
+    labels:
+      caddy: ${PRETIXSCAN_PROXY_HOSTNAME:-localhost}
+      caddy.reverse_proxy: "{{upstreams 7000}}"
+  caddy:
+    image: lucaslorentz/caddy-docker-proxy:2.9
+    ports:
+      - 80:80
+      - ${PRETIXSCAN_PROXY_PORT:-443}:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - caddy_data:/data
+    restart: ${RESTART:-always}
+    depends_on:
+      proxy:
+        condition: service_started
+
+volumes:
+  caddy_data: {}

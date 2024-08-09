@@ -1,0 +1,47 @@
+services:
+  proxy:
+    image: pretixscan-proxy:${PRETIXSCAN_PROXY_VERSION:-2.6.2}
+    restart: ${RESTART:-always}
+    build:
+      context: proxy
+      args:
+        JAVA_VERSION: "${JAVA_VERSION:-11}"
+        PRETIXSCAN_PROXY_VERSION: ${PRETIXSCAN_PROXY_VERSION:-2.6.2}
+        PRETIXSCAN_PROXY_CHECKSUM: ${PRETIXSCAN_PROXY_CHECKSUM:-sha256:8d51688094c8d6a44ca85df9d7b70c200c0000f3115f7d9bcf70b8213e6b9f76}
+    volumes:
+      - pretixscan-proxy-data:/data
+    environment:
+      PRETIXSCAN_PROXY_DATABASE: ${PRETIXSCAN_PROXY_DATABASE:-jdbc:postgresql://postgres/${POSTGRES_DB:-scanproxy}?user=${POSTGRES_USER:-scanproxy}&password=${POSTGRES_PASSWORD:-scanproxy}}
+      PRETIXSCAN_PROXY_BASEURL: ${PRETIXSCAN_PROXY_BASEURL:-https://${PRETIXSCAN_PROXY_HOSTNAME:-localhost}:${PRETIXSCAN_PROXY_PORT:-443}}
+      PRETIXSCAN_PROXY_ADMINAUTH: ${PRETIXSCAN_PROXY_ADMINAUTH:-admin:admin}
+      PRETIXSCAN_PROXY_AUTO_OFFLINE_MODE: ${PRETIXSCAN_PROXY_AUTO_OFFLINE_MODE:-on}
+    ports:
+      - "${PRETIXSCAN_PROXY_ADMIN_BIND:-127.0.0.1:7000}:7000"
+    mem_limit: 1024M
+    mem_reservation: 512M
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-16.4-alpine}
+    restart: ${RESTART:-always}
+    shm_size: 128mb
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-scanproxy}
+      POSTGRES_USER: ${POSTGRES_USER:-scanproxy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS:-scanproxy}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-scanproxy}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pretixscan-proxy-data:
+    driver: local
+  postgresql-data:
+    driver: local
